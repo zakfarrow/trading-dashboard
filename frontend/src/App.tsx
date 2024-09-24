@@ -1,4 +1,5 @@
 import DashboardView from './views/DashboardView';
+import OrderBook from './components/OrderBook';
 
 const App = () => {
   return (
@@ -7,6 +8,7 @@ const App = () => {
         Hello World
       </h1>
       <DashboardView />
+      <OrderBook symbol="SOLUSDT" />
     </>
   );
 };
