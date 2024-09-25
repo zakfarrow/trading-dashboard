@@ -65,29 +65,34 @@ const OrderBook: React.FC<OrderBookProps> = ({ symbol }) => {
   }, [symbol]);
 
   return (
-    <div className="grid grid-cols-2 gap-4 p-4">
-      <div>
-        <h2 className="mb-2 text-xl font-bold">Bids</h2>
-        <ul>
-          {bids.slice(0, 10).map(([price, quantity]) => (
-            <li key={price} className="flex justify-between">
-              <span>{price}</span>
-              <span>{quantity}</span>
-            </li>
-          ))}
-        </ul>
+    <div className="bg-navy-light mr-2 mt-2 flex w-1/5 flex-col gap-4 rounded p-4 text-white">
+      <div className="flex justify-between">
+        <h2 className="mb-2 text-lg">Price&#40;USDT&#41;</h2>
+        <h2 className="mb-2 text-lg">Quantity&#40;SOL&#41;</h2>
+        <h2 className="mb-2 text-lg">Total</h2>
       </div>
-      <div>
-        <h2 className="mb-2 text-xl font-bold">Asks</h2>
-        <ul>
-          {asks.slice(0, 10).map(([price, quantity]) => (
-            <li key={price} className="flex justify-between">
-              <span>{price}</span>
-              <span>{quantity}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul>
+        {bids.slice(0, 10).map(([price, quantity]) => (
+          <li key={price} className="flex justify-between">
+            <span className="my-[0.15rem] rounded bg-[#2f6563] p-[0.1rem] text-[#4bffb5]">
+              {price}
+            </span>
+            <span className="my-[0.15rem] rounded p-[0.1rem]">{quantity}</span>
+            <span className="my-[0.15rem] rounded p-[0.1rem]">{quantity}</span>
+          </li>
+        ))}
+      </ul>
+      <ul>
+        {asks.slice(0, 10).map(([price, quantity]) => (
+          <li key={price} className="flex justify-between">
+            <span className="my-[0.15rem] rounded bg-[#5c3854] p-[0.1rem] text-[#ff4976]">
+              {price}
+            </span>
+            <span className="my-[0.15rem] rounded p-[0.1rem]">{quantity}</span>
+            <span className="my-[0.15rem] rounded p-[0.1rem]">{quantity}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

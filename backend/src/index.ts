@@ -14,5 +14,5 @@ app.use(express.json());
 app.use('/api/binance', binanceApiRoutes);
 
 app.listen(PORT, () => {
-	console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Api server running on http://localhost:${PORT}`);
 });
