@@ -24,3 +24,13 @@ export const fetchHistoricalCandles = async (
 		closeTime: candle[6],
 	}));
 };
+
+export const fetchHistoricalOrders = async (symbol: string, limit: number) => {
+	const response = await axios.get(`https://api.binance.com/api/v3/depth`, {
+		params: {
+			symbol,
+			limit,
+		},
+	});
+	return response.data;
+};

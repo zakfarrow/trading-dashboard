@@ -5,10 +5,7 @@ import {
   ISeriesApi,
   IChartApi,
 } from 'lightweight-charts';
-import {
-  fetchHistoricalData,
-  setupWebSocket,
-} from '../services/chartDataService'; // Import the functions
+import { fetchHistoricCandles, setupWebSocket } from '../services/chartService'; // Import the functions
 
 const CandlestickChart = () => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
@@ -83,16 +80,12 @@ const CandlestickChart = () => {
         borderUpColor: '#4bffb5',
         wickDownColor: '#838ca1',
         wickUpColor: '#838ca1',
-        // scaleMargins: {
-        //   top: 0.1, // 10% margin at the top
-        //   bottom: 0.1, // 10% margin at the bottom
-        // },
       });
 
       candlestickSeriesRef.current = newSeries;
 
       // Fetch historical data from the external service
-      fetchHistoricalData(candlestickSeriesRef.current);
+      fetchHistoricCandles(candlestickSeriesRef.current);
 
       // Resize chart on window resize
       window.addEventListener('resize', resizeChart);
@@ -115,7 +108,11 @@ const CandlestickChart = () => {
     };
   }, []);
 
-  return <div ref={chartContainerRef} className="m-2 h-[80vh] w-4/5" />;
+  return (
+    <div className="flex h-full w-full flex-col">
+      <div ref={chartContainerRef} className="m-2 h-[80vh] w-full" />
+    </div>
+  );
 };
 
 export default CandlestickChart;

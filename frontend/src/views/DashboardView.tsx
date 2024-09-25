@@ -1,11 +1,12 @@
 import CandlestickChart from '../components/CandlestickChart';
 import OrderBook from '../components/OrderBook';
+import OrderBookQuantity from '../components/OrderBookQuantity';
 
 const DashboardView = () => {
   return (
     <div className="flex">
       <CandlestickChart />
-      <OrderBook symbol="SOLUSDT" />
+      <OrderBookQuantity symbol="SOLUSDT" />
     </div>
   );
 };

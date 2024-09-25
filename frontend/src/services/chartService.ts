@@ -2,11 +2,13 @@ import { ISeriesApi, UTCTimestamp } from 'lightweight-charts';
 import ICandlestickData from '../types/ICandlestickData';
 
 // Function to fetch historical data
-const fetchHistoricalData = async (
+const fetchHistoricCandles = async (
   candlestickSeries: ISeriesApi<'Candlestick'> | null
 ) => {
   try {
-    const response = await fetch('http://localhost:5000/api/binance/');
+    const response = await fetch(
+      'http://localhost:5000/api/binance/historicCandles'
+    );
     const data = await response.json();
 
     // Format historical data
@@ -60,4 +62,4 @@ const setupWebSocket = (
   };
 };
 
-export { fetchHistoricalData, setupWebSocket };
+export { fetchHistoricCandles, setupWebSocket };
