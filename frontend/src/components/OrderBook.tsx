@@ -1,98 +1,139 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
+import { fetchHistoricOrderData } from '../services/orderBookService'; // assuming the function is in api.ts
+import { Order, OrderBookData, OrderBookProps } from '../types/OrderBookData';
 
-type Order = [string, string]; // [price, quantity]
-
-interface OrderBookProps {
-  symbol: string; // Trading pair (e.g., SOLUSDT)
+interface IOrders {
+  price: string;
+  quantity: string;
 }
 
 const OrderBook: React.FC<OrderBookProps> = ({ symbol }) => {
-  const [bids, setBids] = useState<Order[]>([]);
-  const [asks, setAsks] = useState<Order[]>([]);
-  const wsRef = useRef<WebSocket | null>(null);
+  const [bids, setBids] = useState<IOrders[]>([]);
+  const [asks, setAsks] = useState<IOrders[]>([]);
 
-  // Function to update the order book with new data from WebSocket
-  const updateOrderBook = (
-    orders: Order[],
-    updates: Order[],
-    isBid: boolean
-  ) => {
-    const updatedOrders = [...orders];
-    updates.forEach(([price, quantity]) => {
-      const index = updatedOrders.findIndex((order) => order[0] === price);
-      if (index !== -1) {
-        if (Number(quantity) === 0) {
-          // Remove the order if quantity is 0 (order canceled)
-          updatedOrders.splice(index, 1);
-        } else {
-          // Update the existing order with new quantity
-          updatedOrders[index] = [price, quantity];
-        }
-      } else if (Number(quantity) > 0) {
-        // Add the new order if not found and quantity is greater than 0
-        updatedOrders.push([price, quantity]);
-      }
-    });
-
-    // Sort the orders properly (bids: descending, asks: ascending)
-    return isBid
-      ? updatedOrders.sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]))
-      : updatedOrders.sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]));
-  };
-
-  // Open WebSocket connection to Binance
   useEffect(() => {
-    const wsUrl = `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@depth`;
-    wsRef.current = new WebSocket(wsUrl);
+    // Fetch initial order book data using REST API
+    const fetchData = async () => {
+      const data: OrderBookData = await fetchHistoricOrderData(symbol);
 
-    wsRef.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      const newBids: Order[] = data.b; // Bid updates
-      const newAsks: Order[] = data.a; // Ask updates
+      // Process initial data
+      const rawBids: Order[] = data.bids;
+      const rawAsks: Order[] = data.asks;
 
-      // Update bids and asks in state
-      setBids((prevBids) => updateOrderBook(prevBids, newBids, true));
-      setAsks((prevAsks) => updateOrderBook(prevAsks, newAsks, false));
+      const bidsByPriceQuantity: IOrders[] = [];
+      rawBids.forEach((rawBid) => {
+        bidsByPriceQuantity.push({ price: rawBid[0], quantity: rawBid[1] });
+      });
+
+      const asksByPriceQuantity: IOrders[] = [];
+      rawAsks.forEach((rawAsk) => {
+        asksByPriceQuantity.push({ price: rawAsk[0], quantity: rawAsk[1] });
+      });
+
+      // Sort both bids and asks based on price and update state
+      setBids(sortAndLimit(bidsByPriceQuantity, 'bids'));
+      setAsks(sortAndLimit(asksByPriceQuantity, 'asks'));
     };
 
-    wsRef.current.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-
-    return () => {
-      wsRef.current?.close();
-    };
+    fetchData();
   }, [symbol]);
 
+  // Handle WebSocket updates for live data
+  useEffect(() => {
+    const ws = new WebSocket(
+      `wss://stream.binance.com:9443/ws/${symbol.toLowerCase()}@depth`
+    );
+
+    ws.onmessage = (event) => {
+      const messageData = JSON.parse(event.data);
+      const newBids = messageData.b;
+      const newAsks = messageData.a;
+
+      setBids((prevBids) => {
+        const updatedBids = [...prevBids];
+
+        newBids.forEach(([price, quantity]: [string, string]) => {
+          const index = updatedBids.findIndex((bid) => bid.price === price);
+          if (index > -1) {
+            if (parseFloat(quantity) === 0) {
+              updatedBids.splice(index, 1);
+            } else {
+              updatedBids[index].quantity = quantity;
+            }
+          } else if (parseFloat(quantity) > 0) {
+            updatedBids.push({ price, quantity });
+          }
+        });
+
+        return sortAndLimit(updatedBids, 'bids');
+      });
+
+      setAsks((prevAsks) => {
+        const updatedAsks = [...prevAsks];
+
+        newAsks.forEach(([price, quantity]: [string, string]) => {
+          const index = updatedAsks.findIndex((ask) => ask.price === price);
+          if (index > -1) {
+            if (parseFloat(quantity) === 0) {
+              updatedAsks.splice(index, 1);
+            } else {
+              updatedAsks[index].quantity = quantity;
+            }
+          } else if (parseFloat(quantity) > 0) {
+            updatedAsks.push({ price, quantity });
+          }
+        });
+
+        return sortAndLimit(updatedAsks, 'asks');
+      });
+    };
+
+    return () => ws.close();
+  }, [symbol]);
+
+  const sortAndLimit = (orders: IOrders[], type: 'bids' | 'asks') => {
+    // Sort orders by price
+    const sortedOrders = orders.sort(
+      (a, b) =>
+        type === 'bids'
+          ? parseFloat(b.price) - parseFloat(a.price) // Descending for bids
+          : parseFloat(a.price) - parseFloat(b.price) // Ascending for asks
+    );
+
+    // Return only the top 10 entries after sorting
+    return sortedOrders.slice(0, 10);
+  };
+
   return (
-    <div className="bg-navy-light mr-2 mt-2 flex w-1/5 flex-col gap-4 rounded p-4 text-white">
-      <div className="flex justify-between">
-        <h2 className="mb-2 text-lg">Price&#40;USDT&#41;</h2>
-        <h2 className="mb-2 text-lg">Quantity&#40;SOL&#41;</h2>
-        <h2 className="mb-2 text-lg">Total</h2>
+    <div className="my-2 mr-2 w-full rounded bg-navy-light p-4 text-white">
+      <h2 className="mb-4 text-center text-xl font-bold">
+        Order Book ({symbol})
+      </h2>
+
+      <div className="mb-2 flex justify-between font-semibold">
+        <div>Price (USDT)</div>
+        <div>Quantity</div>
       </div>
-      <ul>
-        {bids.slice(0, 10).map(([price, quantity]) => (
-          <li key={price} className="flex justify-between">
-            <span className="my-[0.15rem] rounded bg-[#2f6563] p-[0.1rem] text-[#4bffb5]">
-              {price}
-            </span>
-            <span className="my-[0.15rem] rounded p-[0.1rem]">{quantity}</span>
-            <span className="my-[0.15rem] rounded p-[0.1rem]">{quantity}</span>
-          </li>
+
+      {/* Asks Section */}
+      <div className="divide-y divide-gray-700">
+        {asks.reverse().map((ask, index) => (
+          <div key={index} className="flex justify-between text-red-500">
+            <div>{parseFloat(ask.price).toFixed(2)}</div>
+            <div>{parseFloat(ask.quantity).toFixed(3)}</div>
+          </div>
         ))}
-      </ul>
-      <ul>
-        {asks.slice(0, 10).map(([price, quantity]) => (
-          <li key={price} className="flex justify-between">
-            <span className="my-[0.15rem] rounded bg-[#5c3854] p-[0.1rem] text-[#ff4976]">
-              {price}
-            </span>
-            <span className="my-[0.15rem] rounded p-[0.1rem]">{quantity}</span>
-            <span className="my-[0.15rem] rounded p-[0.1rem]">{quantity}</span>
-          </li>
+      </div>
+
+      {/* Bids Section */}
+      <div className="divide-y divide-gray-700">
+        {bids.map((bid, index) => (
+          <div key={index} className="flex justify-between text-green-500">
+            <div>{parseFloat(bid.price).toFixed(2)}</div>
+            <div>{parseFloat(bid.quantity).toFixed(3)}</div>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 };

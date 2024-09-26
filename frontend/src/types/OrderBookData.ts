@@ -1,7 +1,4 @@
-interface Order {
-  price: number;
-  quantity: number;
-}
+type Order = [string, string];
 
 interface OrderBookData {
   bids: Order[];
