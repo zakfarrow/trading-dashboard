@@ -1,5 +1,6 @@
-import { ISeriesApi, UTCTimestamp } from 'lightweight-charts';
-import ICandlestickData from '../types/ICandlestickData';
+import { IPriceLine, ISeriesApi, UTCTimestamp } from 'lightweight-charts';
+import ICandlestickData from '@/types/ICandlestickData';
+import removePriceAlert from '@/utils/priceAlertUtility';
 
 // Function to fetch historical data
 const fetchHistoricCandles = async (
@@ -31,7 +32,10 @@ const fetchHistoricCandles = async (
 
 // Function to handle WebSocket and real-time updates
 const setupWebSocket = (
-  candlestickSeries: ISeriesApi<'Candlestick'> | null
+  candlestickSeries: ISeriesApi<'Candlestick'> | null,
+  alertPrice: number | null,
+  setAlertPrice: React.Dispatch<React.SetStateAction<number | null>>,
+  priceLine: IPriceLine | null
 ) => {
   if (!candlestickSeries) return;
 
@@ -42,6 +46,16 @@ const setupWebSocket = (
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data);
     const candlestick = message.k;
+
+    if (alertPrice && priceLine) {
+      if (
+        (candlestick.c >= alertPrice && candlestick.c - alertPrice >= 0) ||
+        (candlestick.c <= alertPrice && alertPrice - candlestick.c <= 0)
+      ) {
+        alert(`Price crossed the alert level: ${alertPrice}`);
+        removePriceAlert(candlestickSeries, priceLine, setAlertPrice);
+      }
+    }
 
     // Format WebSocket candlestick data
     const candlestickData: ICandlestickData = {

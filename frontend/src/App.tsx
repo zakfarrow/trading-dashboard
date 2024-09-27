@@ -1,5 +1,5 @@
-import DashboardView from './views/DashboardView';
-import Header from './components/Header';
+import DashboardView from '@/views/DashboardView';
+import Header from '@/components/Header';
 
 const App = () => {
   return (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { fetchHistoricOrderData } from '../services/orderBookService'; // assuming the function is in api.ts
-import { Order, OrderBookData, OrderBookProps } from '../types/OrderBookData';
+import { fetchHistoricOrderData } from '@/services/orderBookService'; // assuming the function is in api.ts
+import { Order, OrderBookData, OrderBookProps } from '@/types/OrderBookData';
 
 interface IOrders {
   price: string;
@@ -105,10 +105,8 @@ const OrderBook: React.FC<OrderBookProps> = ({ symbol }) => {
   };
 
   return (
-    <div className="my-2 mr-2 w-full rounded bg-navy-light p-4 text-white">
-      <h2 className="mb-4 text-center text-xl font-bold">
-        Order Book ({symbol})
-      </h2>
+    <div className="my-2 mr-2 w-1/5 rounded bg-navy-light p-4 text-white">
+      <h2 className="mb-4 text-center text-xl">Order Book</h2>
 
       <div className="mb-2 flex justify-between font-semibold">
         <div>Price (USDT)</div>
@@ -118,7 +116,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ symbol }) => {
       {/* Asks Section */}
       <div className="divide-y divide-gray-700">
         {asks.reverse().map((ask, index) => (
-          <div key={index} className="flex justify-between text-red-500">
+          <div key={index} className="flex justify-between text-[#ff4976]">
             <div>{parseFloat(ask.price).toFixed(2)}</div>
             <div>{parseFloat(ask.quantity).toFixed(3)}</div>
           </div>
@@ -128,7 +126,7 @@ const OrderBook: React.FC<OrderBookProps> = ({ symbol }) => {
       {/* Bids Section */}
       <div className="divide-y divide-gray-700">
         {bids.map((bid, index) => (
-          <div key={index} className="flex justify-between text-green-500">
+          <div key={index} className="flex justify-between text-[#4bffb5]">
             <div>{parseFloat(bid.price).toFixed(2)}</div>
             <div>{parseFloat(bid.quantity).toFixed(3)}</div>
           </div>

@@ -1,5 +1,5 @@
-import CandlestickChart from '../components/CandlestickChart';
-import OrderBook from '../components/OrderBook';
+import CandlestickChart from '@/components/CandlestickChart';
+import OrderBook from '@/components/OrderBook';
 
 const DashboardView = () => {
   return (
