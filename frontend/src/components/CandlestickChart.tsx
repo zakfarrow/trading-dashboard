@@ -9,7 +9,7 @@ import {
 } from 'lightweight-charts';
 import { fetchHistoricCandles, setupWebSocket } from '@/services/chartService'; // Import the functions
 import removePriceAlert from '@/utils/priceAlertUtility';
-import AlertButton from '@components/Button/AlertButton';
+// import AlertButton from '@components/Button/AlertButton';
 
 const CandlestickChart = () => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
@@ -184,7 +184,7 @@ const CandlestickChart = () => {
     <>
       <div className="flex h-full w-full flex-col">
         <div className="mx-2 mt-2 flex flex-row-reverse rounded bg-navy-light">
-          <AlertButton />
+          {/* <AlertButton /> */}
         </div>
         <div ref={chartContainerRef} className="m-2 h-[80vh] w-full" />
       </div>
