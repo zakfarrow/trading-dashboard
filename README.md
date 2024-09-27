@@ -38,4 +38,8 @@ Go back to the root folder and run the following.
 - WebScoket connections for live data stream
 - Set custom price alert on chart via doubleclick (doubleclick at the same price level to remove).
 ## Note
-I initially planned to include several features listed below limited amount of time in the evenings to develop this only spend a limited amount of time   
+I initially planned to include several features listed below, but due to limited time, I could only implement the core functionality.
+
+- Additional options for candle time interval
+- Cumulative total for order quantities
+- Bars under order prices to visualise their quantity relative to each other
